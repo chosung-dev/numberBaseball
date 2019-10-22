@@ -226,34 +226,6 @@ public class numberBaseball {
             int[] insert;
             insert = newtest.getAuto_answer();
 
-//            int answer_count=0;
-//            int answer_total_count=1;
-//            for(int i=0; i<number_length; i++){
-//                answer_total_count *= (9-i);
-//            }
-//            Random randa = new Random();
-//            insert = new int[] {randa.nextInt(9)+1,randa.nextInt(9)+1,randa.nextInt(9)+1};
-//
-//            int[][] bot_answerable_list2;
-//            bot_answerable_list2 = new int[answer_total_count][number_length];
-//            int array_num = 0;
-//            for(int i=1; i<10; i++){
-//                for(int j=1; j<10; j++){
-//                    for(int k=1; k<10; k++){
-//                        if (i==j || j==k || k==i){
-//                            continue;
-//                        }else{
-//                            bot_answerable_list2[array_num][0] = i;
-//                            bot_answerable_list2[array_num][1] = j;
-//                            bot_answerable_list2[array_num][2] = k;
-//                            array_num++;
-//                        }
-//                    }
-//                }
-//            }
-//            insert = bot_answerable_list2[randa.nextInt(bot_answerable_list2.length)];
-//
-
             System.out.print("입력 : ");
             System.out.println(""+insert[0]+""+insert[1]+""+insert[2]);
 
