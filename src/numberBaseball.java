@@ -74,6 +74,8 @@ public class numberBaseball {
 
     public int[] getAuto_answer(){
         answer_count++;
+        // ** 업데이트 예정
+        // 가장 많은 경우의 수 지울 수 있는 정답으로 반환
         return getRandom_botAnswerableList();
     }
 
