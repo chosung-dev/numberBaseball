@@ -31,21 +31,26 @@ class stricke_ball{
     }
 }
 
-public class numberBaseball {
-    static int numberDigits = 3;
-    static Random rand = new Random();
-    private int answer_count;
-    private int[][] bot_answerable_list;
-    private int bot_answerable_size;
-    private int[][] player_answerable_list;
-    private int player_answerable_size;
-    int[] nomal_rightAnswer;
+public class baseball {
+    static int[] number = {1,2,3,4,5,6,7,8,9};
+    static int number_length = 3;
+    private Random rand = new Random();
+    private Random rand2 = new Random();
+    int answer_count;
+    int[][] answer_all_list;
+    int size;
+    int[][] dab_answer_all_list;
+    int dab_size;
+    int[] nomal_dab;
 
-    public numberBaseball(){
+    public baseball(){
         answer_count=0;
         int answer_total_count=1;
-        for(int i=0; i<numberDigits; i++){ answer_total_count *= (9-i); }
-        bot_answerable_list = new int[answer_total_count][numberDigits];
+        for(int i=0; i<number_length; i++){
+            answer_total_count *= (9-i);
+        }
+        answer_all_list = new int[answer_total_count][number_length];
+        dab_answer_all_list = new int[answer_total_count][number_length];
         int array_num = 0;
         for(int i=1; i<10; i++){
             for(int j=1; j<10; j++){
@@ -53,59 +58,100 @@ public class numberBaseball {
                     if (i==j || j==k || k==i){
                         continue;
                     }else{
-                        // 정답 가능한 모든 경우의 수
-                        // 3의자리일 경우 123 ~ 987 까지의 값 저장
-                        bot_answerable_list[array_num][0] = i;
-                        bot_answerable_list[array_num][1] = j;
-                        bot_answerable_list[array_num++][2] = k;
+                        answer_all_list[array_num][0] = i;
+                        answer_all_list[array_num][1] = j;
+                        answer_all_list[array_num][2] = k;
+                        dab_answer_all_list[array_num][0] = i;
+                        dab_answer_all_list[array_num][1] = j;
+                        dab_answer_all_list[array_num][2] = k;
+                        array_num++;
                     }
                 }
             }
         }
-        player_answerable_list = Arrays.copyOf(bot_answerable_list, bot_answerable_list.length);
-        this.bot_answerable_size = bot_answerable_list.length;
-        this.player_answerable_size = player_answerable_list.length;
-        this.nomal_rightAnswer = getRandom_botAnswerableList();
+        nomal_dab = getRandomAnswer();
+        this.size = answer_all_list.length;
+        this.dab_size = dab_answer_all_list.length;
     }
 
-    private int[] getRandom_botAnswerableList(){
-        return bot_answerable_list[rand.nextInt(bot_answerable_size)];
+    public int getRandArrayElement(){
+        return number[rand.nextInt(number.length)];
     }
 
-    public int[] getAuto_answer(){
-        answer_count++;
-        // ** 업데이트 예정
-        // 가장 많은 경우의 수 지울 수 있는 정답으로 반환
-        return getRandom_botAnswerableList();
-    }
-
-    public void filter_botAnswerableList(int[] insert_number, int strike, int ball){
-        for(int i=0; i<this.bot_answerable_size; i++) {
-            if(Arrays.equals(bot_answerable_list[i],insert_number)){
-                for(int k=i; k<this.bot_answerable_size-1; k++){
-                    bot_answerable_list[k] = bot_answerable_list[k+1];
+    public boolean isInSameNum(int[] array, int arrayLength){
+        for(int i=0; i<arrayLength; i++){
+            for(int j=i+1; j<arrayLength; j++){
+                if(array[i] == array[j]){
+                    return true;
                 }
-                this.bot_answerable_size--;
+            }
+        }
+        return false;
+    }
+
+    public int[] getRandomAnswer(){
+        int[] first_number = new int[number_length];
+        for(int i=0; i<first_number.length; i++){
+            first_number[i] = getRandArrayElement();
+            if (isInSameNum(first_number, i+1)){
+                i--;
+                continue;
+            }
+        }
+        return first_number;
+    }
+
+    public int[] getRandomAnswerAllList(){
+        return answer_all_list[rand.nextInt(size)];
+    }
+
+    public int[] get_auto_answer(){
+        if (answer_count == 0){
+            return getRandomAnswer();
+        }else if(answer_count > 1) {
+            return getRandomAnswerAllList();
+        }else{
+            return getRandomAnswer();
+        }
+    }
+
+    public void answerAdd(){
+        answer_count++;
+        return;
+    }
+
+    public void delete_answer_list(int[] insert_number, int strike, int ball){
+        for(int i=0; i<this.size; i++) {
+            if(answer_all_list[i][0]== insert_number[0] && answer_all_list[i][1]== insert_number[1]  && answer_all_list[i][2]== insert_number[2] ){
+                for(int k=i; k<this.size-1; k++){
+                    answer_all_list[k] = answer_all_list[k+1];
+                }
+                this.size--;
                 break;
             }
         }
-        filter_botAnswerableList(insert_number, 0, strike, ball);
+        int deleteNum = 0;
+        deleteNum = delete_answer(insert_number, 0, strike, ball, deleteNum);
     }
 
-    public void filter_botAnswerableList(int[] insert_number, int index_number, int strike, int ball){
-        if(bot_answerable_size<=index_number){ return; }
-        stricke_ball sb = get_strickeAndBall(bot_answerable_list[index_number], insert_number);
-        if (sb.getStrike() != strike || sb.getBall() != ball){
-            for(int k=index_number; k<this.bot_answerable_size-1; k++){
-                bot_answerable_list[k] = bot_answerable_list[k+1];
-            }
-            this.bot_answerable_size--;
-            filter_botAnswerableList(insert_number, index_number, strike, ball);
+    public int delete_answer(int[] insert_number, int index_number, int strike, int ball, int deleteNum){
+        if(size<=index_number){
+            return deleteNum;
         }
-        else { filter_botAnswerableList(insert_number, index_number+1, strike, ball); }
+        stricke_ball sb = get_answer(answer_all_list[index_number], insert_number);
+        if (sb.getStrike() != strike || sb.getBall() != ball){
+            for(int k=index_number; k<this.size-1; k++){
+                answer_all_list[k] = answer_all_list[k+1];
+            }
+            this.size--;
+            return delete_answer(insert_number, index_number, strike, ball, ++deleteNum);
+        }
+        else {
+            return delete_answer(insert_number, index_number + 1, strike, ball, deleteNum);
+        }
     }
 
-    public stricke_ball get_strickeAndBall(int[] insert_number, int[] test_answer){
+    public stricke_ball get_answer(int[] insert_number, int[] test_answer){
         stricke_ball sb = new stricke_ball();
         for (int i=0; i<insert_number.length; i++) {
             for (int j=0; j<test_answer.length; j++) {
@@ -121,87 +167,15 @@ public class numberBaseball {
         return sb;
     }
 
-    public void filter_player_answerable_list(int[] insert_number, int strike, int ball){
-        int deleteFlag = 0;
-        for(int i=0; i<this.player_answerable_size; i++) {
-            if(Arrays.equals(player_answerable_list[i], insert_number)){
-                for(int k=i; k<this.player_answerable_size-1; k++){
-                    player_answerable_list[k] = player_answerable_list[k+1];
-                }
-                if(this.player_answerable_size == 1) {
-                    return;
-                }
-                this.player_answerable_size = this.player_answerable_size-1;
-                deleteFlag++;
-                break;
-            }
-        }
-        filter_player_answerable_list(insert_number, 0, strike, ball, deleteFlag);
-    }
-
-    public void filter_player_answerable_list(int[] insert_number, int index_number, int strike, int ball, int deleteNum){
-        if(player_answerable_size<=index_number){
-            return ;
-        }
-        stricke_ball sb = get_strickeAndBall(player_answerable_list[index_number], insert_number);
-        if (sb.getStrike() != strike || sb.getBall() != ball){
-            for(int k=index_number; k<this.player_answerable_size-1; k++){
-                player_answerable_list[k] = player_answerable_list[k+1];
-            }
-            this.player_answerable_size = this.player_answerable_size-1;
-            filter_player_answerable_list(insert_number, index_number, strike, ball, ++deleteNum);
-        }
-        else {
-            filter_player_answerable_list(insert_number, index_number + 1, strike, ball, deleteNum);
-        }
-    }
-
-    public int get_playerAnswerableList_numberOfDeletions(int[] insert_number, int strike, int ball){
-        int answerable_size = this.player_answerable_size;
-        int[][] answerable_list = Arrays.copyOf(player_answerable_list, player_answerable_list.length);
-        for(int i=0; i<answerable_size; i++) {
-            if(Arrays.equals(answerable_list[i], insert_number)){
-                for(int k=i; k<answerable_size-1; k++){
-                    answerable_list[k] = answerable_list[k+1];
-                }
-                answerable_size--;
-                return get_playerAnswerableList_numberOfDeletions(answerable_list, answerable_size, insert_number, 0, strike, ball, 1);
-            }
-        }
-        return get_playerAnswerableList_numberOfDeletions(answerable_list, answerable_size, insert_number, 0, strike, ball, 0);
-    }
-
-    public int get_playerAnswerableList_numberOfDeletions(int[][] answerable_list, int answerable_size, int[] insert_number, int index_number, int strike, int ball, int deleteNum){
-        if(answerable_size<=index_number){
-            return deleteNum;
-        }
-        int[][] answerable_list_temp = Arrays.copyOf(answerable_list, answerable_list.length);
-        stricke_ball sb = get_strickeAndBall(answerable_list_temp[index_number], insert_number);
-        if (sb.getStrike() != strike || sb.getBall() != ball){
-            for(int k=index_number; k<answerable_size-1; k++){
-                answerable_list_temp[k] = answerable_list_temp[k+1];
-            }
-            answerable_size--;
-            return get_playerAnswerableList_numberOfDeletions(answerable_list_temp, answerable_size, insert_number, index_number, strike, ball, deleteNum+1);
-        }
-        else {
-            return get_playerAnswerableList_numberOfDeletions(answerable_list_temp, answerable_size, insert_number, index_number + 1, strike, ball, deleteNum);
-        }
-    }
-
-    public int[] getDab(){
-        return player_answerable_list[rand.nextInt(player_answerable_size)];
-    }
-
-    public stricke_ball getDab_strickeAndBall(int[] insert){
-        int goodI=-1, goodJ=-1;
-        int low_delectCount= player_answerable_list.length;
+    public stricke_ball getDab(int[] insert){
+        int goodI=0, goodJ=0;
+        int low_delectCount= dab_answer_all_list.length;
         for(int i=0; i<=3; i++){
             for(int j=0; i+j<=3; j++){
-                int delectCount = get_playerAnswerableList_numberOfDeletions(insert, i, j);
-                if(delectCount<=low_delectCount && delectCount!=player_answerable_size){
+                int delectCount = dab_delete_answer_list(insert, i, j);
+                if(delectCount<=low_delectCount){
                     if(delectCount==low_delectCount){
-                        if(rand.nextInt(100)<50){
+                        if(rand2.nextInt(100)<50){
                             continue;
                         }
                     }
@@ -211,35 +185,104 @@ public class numberBaseball {
                 }
             }
         }
-        if(goodI==-1 || goodJ==-1) {
-            stricke_ball newStrikeBall = new stricke_ball(3, 0);
-            return newStrikeBall;
+        array_dab_delete_answer_list(insert, goodI, goodJ);
+        if(dab_size==0){
+            goodI = 3;
+            goodJ = 0;
         }
-        filter_player_answerable_list(insert, goodI, goodJ);
         stricke_ball newStrikeBall = new stricke_ball(goodI, goodJ);
-
         return newStrikeBall;
     }
 
+    public void array_dab_delete_answer_list(int[] insert_number, int strike, int ball){
+        for(int i=0; i<this.dab_size; i++) {
+            if(dab_answer_all_list[i][0]== insert_number[0] && dab_answer_all_list[i][1]== insert_number[1]  && dab_answer_all_list[i][2]== insert_number[2] ){
+                for(int k=i; k<this.dab_size-1; k++){
+                    dab_answer_all_list[k] = dab_answer_all_list[k+1];
+                }
+                this.dab_size = this.dab_size-1;
+                break;
+            }
+        }
+        array_dab_delete_answer(insert_number, 0, strike, ball, 1);
+    }
+
+    public void array_dab_delete_answer(int[] insert_number, int index_number, int strike, int ball, int deleteNum){
+        if(dab_size<=index_number){
+            return ;
+        }
+        stricke_ball sb = get_answer(dab_answer_all_list[index_number], insert_number);
+        if (sb.getStrike() != strike || sb.getBall() != ball){
+            for(int k=index_number; k<this.dab_size-1; k++){
+                dab_answer_all_list[k] = dab_answer_all_list[k+1];
+            }
+            this.dab_size = this.dab_size-1;
+            array_dab_delete_answer(insert_number, index_number, strike, ball, ++deleteNum);
+        }
+        else {
+            array_dab_delete_answer(insert_number, index_number + 1, strike, ball, deleteNum);
+        }
+    }
+
+    public int dab_delete_answer_list(int[] insert_number, int strike, int ball){
+        int size = this.size;
+        int[][] dab_list = new int[dab_answer_all_list.length][dab_answer_all_list[0].length];
+        for(int i=0; i<dab_answer_all_list.length; i++){
+            for(int j=0; j<dab_answer_all_list[i].length; j++){
+                dab_list[i][j] = dab_answer_all_list[i][j];
+            }
+        }
+        for(int i=0; i<size; i++) {
+            if(dab_list[i][0]== insert_number[0] && dab_list[i][1]== insert_number[1]  && dab_list[i][2]== insert_number[2] ){
+                for(int k=i; k<size-1; k++){
+                    dab_list[k] = dab_list[k+1];
+                }
+                size--;
+                break;
+            }
+        }
+        return dab_delete_answer(dab_list, size, insert_number, 0, strike, ball, 1);
+    }
+
+    public int dab_delete_answer(int[][] dab_list, int size, int[] insert_number, int index_number, int strike, int ball, int deleteNum){
+        if(size<=index_number){
+            return deleteNum;
+        }
+        int[][] dab_list_temp = new int[dab_list.length][dab_list[0].length];
+        for(int i=0; i<dab_list.length; i++){
+            for(int j=0; j<dab_list[i].length; j++){
+                dab_list[i][j] = dab_list[i][j];
+            }
+        }
+        stricke_ball sb = get_answer(dab_list[index_number], insert_number);
+        if (sb.getStrike() != strike || sb.getBall() != ball){
+            for(int k=index_number; k<size-1; k++){
+                dab_list[k] = dab_list[k+1];
+            }
+            size--;
+            return dab_delete_answer(dab_list, size, insert_number, index_number, strike, ball, deleteNum+1);
+        }
+        else {
+            return dab_delete_answer(dab_list, size, insert_number, index_number + 1, strike, ball, deleteNum);
+        }
+    }
+
+    public int[] getDab(){
+        return dab_answer_all_list[0];
+    }
+
     public static void main(String args[]){
-        numberBaseball newtest = new numberBaseball();
+        baseball newtest = new baseball();
         while(true){
-            System.out.println("=============================================================");
             int[] insert;
-            insert = newtest.getAuto_answer();
-
-            System.out.print("입력 : ");
+            insert = newtest.get_auto_answer();
             System.out.println(""+insert[0]+""+insert[1]+""+insert[2]);
-
-            stricke_ball sb = newtest.getDab_strickeAndBall(insert);
-            newtest.filter_botAnswerableList(insert, sb.getStrike(), sb.getBall());
+            stricke_ball sb = newtest.getDab(insert);
+            newtest.delete_answer_list(insert, sb.getStrike(), sb.getBall());
             System.out.println("strike : "+ sb.getStrike()+ "\tball : "+ sb.getBall());
+            newtest.answerAdd();
             if( sb.getStrike() == 3) {
-                System.out.println("=============================================================");
-                int[] dab_temp = newtest.getDab();
-                System.out.println(newtest.answer_count+"회 시도");
-                System.out.print("정답 : ");
-                System.out.println(dab_temp[0]+""+dab_temp[1]+""+dab_temp[2]);
+                System.out.println(newtest.answer_count+"회");
                 break;
             }
         }
